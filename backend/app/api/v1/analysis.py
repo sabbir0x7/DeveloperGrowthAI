@@ -71,6 +71,7 @@ async def run_analysis(
             },
         ) from exc
     except UpstreamAIError as exc:
+        print(f"!!! UPSTREAM AI ERROR !!! Status: {exc.status_code}, Body: {exc.body}")
         raise HTTPException(
             status_code=status.HTTP_502_BAD_GATEWAY,
             detail={
@@ -80,6 +81,7 @@ async def run_analysis(
             },
         ) from exc
     except AIEnvelopeError as exc:
+        print(f"!!! AI ENVELOPE ERROR !!! Invalid JSON returned by AI.")
         raise HTTPException(
             status_code=status.HTTP_502_BAD_GATEWAY,
             detail={
