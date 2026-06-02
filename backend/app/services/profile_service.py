@@ -149,9 +149,24 @@ def _serialize_patch(patch: ProfilePatch) -> dict[str, Any]:
 
 
 def delete_profile(user_id: UUID | str, *, client: Client | None = None) -> None:
-    """Delete the user from Supabase Auth (cascades to public tables)."""
+    """Delete the user from Supabase Auth and public tables explicitly."""
     sb = client if client is not None else get_supabase()
-    sb.auth.admin.delete_user(str(user_id))
+    user_id_str = str(user_id)
+    
+    # Manually delete from child tables first to avoid foreign key violations
+    # if ON DELETE CASCADE is missing in the database schema.
+    try:
+        sb.table("skills").delete().eq("user_id", user_id_str).execute()
+        sb.table("roadmaps").delete().eq("user_id", user_id_str).execute()
+        sb.table("analyses").delete().eq("user_id", user_id_str).execute()
+        sb.table("user_settings").delete().eq("user_id", user_id_str).execute()
+        # Delete the main public user profile which has the UNIQUE email constraint
+        sb.table("users").delete().eq("id", user_id_str).execute()
+    except Exception as e:
+        print(f"Warning: Could not delete some public records for {user_id_str}: {e}")
+
+    # Finally, delete from auth.users
+    sb.auth.admin.delete_user(user_id_str)
 
 
 __all__ = ["ProfileNotFound", "get_profile", "patch_profile", "delete_profile"]
