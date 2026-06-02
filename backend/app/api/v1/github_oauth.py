@@ -61,6 +61,7 @@ def github_connect(user: CurrentUser = Depends(get_current_user)) -> dict:
         "redirect_uri": settings.GITHUB_REDIRECT_URI,
         "scope": "read:user,repo",
         "state": str(user.id),
+        "prompt": "consent",  # Request GitHub to show the authorization screen again
     }
 
     authorize_url = f"{_GITHUB_AUTHORIZE_URL}?{urlencode(params)}"
