@@ -43,6 +43,11 @@ class ProfileRepository {
     return Profile.fromJson(body);
   }
 
+  /// Deletes the current user's account and all associated data.
+  Future<void> deleteAccount() async {
+    await _dio.delete<dynamic>('/api/v1/profile/me');
+  }
+
   /// Defensively coerces a Dio response body into `Map<String, dynamic>`.
   ///
   /// Dio decodes JSON for us when the server returns

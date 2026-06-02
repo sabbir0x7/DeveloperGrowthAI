@@ -76,6 +76,14 @@ class ProfileNotifier extends AsyncNotifier<Profile> {
       ref.read(profileRepositoryProvider).getMe,
     );
   }
+
+  /// Deletes the user's account and signs out.
+  Future<void> deleteAccount() async {
+    final ProfileRepository repo = ref.read(profileRepositoryProvider);
+    await repo.deleteAccount();
+    // After successful backend deletion, sign out locally.
+    await ref.read(authProvider.notifier).signOut();
+  }
 }
 
 /// Marker exception used by [ProfileNotifier.build] when there is no

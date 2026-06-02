@@ -148,4 +148,10 @@ def _serialize_patch(patch: ProfilePatch) -> dict[str, Any]:
     return patch.model_dump(exclude_unset=True, mode="json")
 
 
-__all__ = ["ProfileNotFound", "get_profile", "patch_profile"]
+def delete_profile(user_id: UUID | str, *, client: Client | None = None) -> None:
+    """Delete the user from Supabase Auth (cascades to public tables)."""
+    sb = client if client is not None else get_supabase()
+    sb.auth.admin.delete_user(str(user_id))
+
+
+__all__ = ["ProfileNotFound", "get_profile", "patch_profile", "delete_profile"]

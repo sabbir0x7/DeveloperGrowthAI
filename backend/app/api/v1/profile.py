@@ -71,6 +71,12 @@ def patch_me(
         ) from exc
 
 
+@router.delete("/me", status_code=status.HTTP_204_NO_CONTENT)
+def delete_me(user: CurrentUser = Depends(get_current_user)):
+    """Delete the authenticated user's account."""
+    profile_service.delete_profile(user.id)
+
+
 # ---------------------------------------------------------------------------
 # /profile/settings
 # ---------------------------------------------------------------------------

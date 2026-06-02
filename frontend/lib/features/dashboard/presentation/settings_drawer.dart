@@ -59,6 +59,8 @@ class _SettingsDrawerState extends ConsumerState<SettingsDrawer> {
   bool _goalSaved = false;
   bool _goalPrefilled = false;
 
+  bool _deletingAccount = false;
+
   @override
   void initState() {
     super.initState();
@@ -202,6 +204,49 @@ class _SettingsDrawerState extends ConsumerState<SettingsDrawer> {
     }
     if (!mounted) return;
     context.go(AppRoutes.login);
+  }
+
+  Future<void> _deleteAccount() async {
+    final bool? confirm = await showDialog<bool>(
+      context: context,
+      builder: (BuildContext ctx) => AlertDialog(
+        backgroundColor: kBgSurface,
+        title: const Text('Delete Account', style: TextStyle(color: Colors.white)),
+        content: const Text(
+          'Are you sure you want to completely delete your account and all associated data? This action cannot be undone.',
+          style: TextStyle(color: Colors.white70),
+        ),
+        actions: <Widget>[
+          TextButton(
+            onPressed: () => Navigator.pop(ctx, false),
+            child: const Text('Cancel', style: TextStyle(color: Colors.white)),
+          ),
+          ElevatedButton(
+            style: ElevatedButton.styleFrom(backgroundColor: kNeonPink),
+            onPressed: () => Navigator.pop(ctx, true),
+            child: const Text('Delete', style: TextStyle(color: Colors.white)),
+          ),
+        ],
+      ),
+    );
+
+    if (confirm != true) return;
+
+    setState(() => _deletingAccount = true);
+    try {
+      await ref.read(profileProvider.notifier).deleteAccount();
+      if (!mounted) return;
+      context.go(AppRoutes.login);
+    } catch (e) {
+      if (!mounted) return;
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(content: Text('Failed to delete account: $e')),
+      );
+    } finally {
+      if (mounted) {
+        setState(() => _deletingAccount = false);
+      }
+    }
   }
 
   @override
@@ -414,8 +459,16 @@ class _SettingsDrawerState extends ConsumerState<SettingsDrawer> {
               NeonButton(
                 label: 'Log out',
                 icon: Icons.logout,
-                color: kNeonPink,
+                color: kNeonCyan, // Changed color from Pink to Cyan to distinguish from Delete
                 onPressed: _logout,
+              ),
+              const SizedBox(height: 16),
+              NeonButton(
+                label: 'Delete Account',
+                icon: Icons.delete_forever,
+                color: kNeonPink,
+                isLoading: _deletingAccount,
+                onPressed: _deletingAccount ? null : _deleteAccount,
               ),
             ],
           ),
