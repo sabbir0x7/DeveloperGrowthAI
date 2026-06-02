@@ -60,6 +60,21 @@ class _DashboardScreenState extends ConsumerState<DashboardScreen> {
     super.dispose();
   }
 
+  Future<void> _handleRefresh() async {
+    ref.invalidate(latestAnalysisProvider);
+    ref.invalidate(profileProvider);
+    ref.invalidate(settingsProvider);
+    
+    try {
+      await Future.wait(<Future<dynamic>>[
+        ref.read(latestAnalysisProvider.future),
+        ref.read(profileProvider.future),
+      ]);
+    } catch (_) {
+      // Ignore errors during pull-to-refresh; the UI handles error states.
+    }
+  }
+
   Future<void> _runAnalysis() async {
     if (_running) return;
 
@@ -190,11 +205,22 @@ class _DashboardScreenState extends ConsumerState<DashboardScreen> {
   }
 
   Widget _buildEmptyState(ThemeData theme) {
-    return Center(
-      child: SingleChildScrollView(
-        padding: const EdgeInsets.all(24),
-        child: ConstrainedBox(
-          constraints: const BoxConstraints(maxWidth: 480),
+    return LayoutBuilder(
+      builder: (BuildContext context, BoxConstraints constraints) {
+        return RefreshIndicator(
+          onRefresh: _handleRefresh,
+          color: kNeonCyan,
+          backgroundColor: kBgDeep,
+          child: SingleChildScrollView(
+            physics: const AlwaysScrollableScrollPhysics(),
+            padding: const EdgeInsets.all(24),
+            child: ConstrainedBox(
+              constraints: BoxConstraints(
+                minHeight: constraints.maxHeight - 48, // 48 is padding
+              ),
+              child: Center(
+                child: ConstrainedBox(
+                  constraints: const BoxConstraints(maxWidth: 480),
           child: GlassCard(
             padding: const EdgeInsets.all(32),
             child: Column(
@@ -254,8 +280,12 @@ class _DashboardScreenState extends ConsumerState<DashboardScreen> {
               ],
             ),
           ),
-        ),
-      ),
+                ),
+              ),
+            ),
+          ),
+        );
+      },
     );
   }
 
@@ -334,9 +364,15 @@ class _DashboardScreenState extends ConsumerState<DashboardScreen> {
         const SizedBox(height: 16),
         // Tab content
         Expanded(
-          child: SingleChildScrollView(
-            padding: const EdgeInsets.fromLTRB(24, 0, 24, 32),
-            child: _buildTabContent(theme, result),
+          child: RefreshIndicator(
+            onRefresh: _handleRefresh,
+            color: kNeonCyan,
+            backgroundColor: kBgDeep,
+            child: SingleChildScrollView(
+              physics: const AlwaysScrollableScrollPhysics(),
+              padding: const EdgeInsets.fromLTRB(24, 0, 24, 32),
+              child: _buildTabContent(theme, result),
+            ),
           ),
         ),
       ],
