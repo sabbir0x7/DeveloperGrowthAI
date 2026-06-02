@@ -97,7 +97,7 @@ class _ConnectProfilesScreenState
       if (await canLaunchUrl(url)) {
         await launchUrl(
           url,
-          mode: LaunchMode.inAppBrowserView,
+          mode: LaunchMode.externalApplication,
         );
       }
 
