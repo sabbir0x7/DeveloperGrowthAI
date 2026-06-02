@@ -39,6 +39,7 @@ class Settings(BaseSettings):
     GITHUB_REDIRECT_URI: str = "http://localhost:8000/api/v1/auth/github/callback"
 
     # --- AI provider defaults ---
+    AI_API_KEY_DEFAULT: str = ""
     AI_MODEL_DEFAULT: str = "gpt-4o-mini"
     AI_PROVIDER_BASE_URL_DEFAULT: HttpUrl = HttpUrl("https://api.openai.com/v1")
 

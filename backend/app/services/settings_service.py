@@ -173,11 +173,17 @@ def get_decrypted_key(user_id: UUID | str) -> str:
         ``ai_key_missing`` per Requirement 4.7.
     """
     row = _select_row(user_id)
+    default_key = get_app_settings().AI_API_KEY_DEFAULT
+
     if row is None:
+        if default_key:
+            return default_key
         raise MissingAIKey("ai_key_missing")
 
     encrypted = _decode_bytea(row.get("encrypted_ai_key"))
     if not encrypted:
+        if default_key:
+            return default_key
         raise MissingAIKey("ai_key_missing")
 
     return get_encryption_service().decrypt(encrypted)
