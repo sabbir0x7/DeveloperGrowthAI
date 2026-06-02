@@ -33,5 +33,5 @@ const String kSupabaseAnonKey = String.fromEnvironment(
 /// For production APK use: https://developergrowthai.onrender.com
 const String kApiBaseUrl = String.fromEnvironment(
   'API_BASE_URL',
-  defaultValue: 'http://127.0.0.1:8000',
+  defaultValue: 'https://developergrowthai.onrender.com',
 );
