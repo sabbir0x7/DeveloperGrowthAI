@@ -92,10 +92,13 @@ class _ConnectProfilesScreenState
       final Map<String, dynamic> data = response.data as Map<String, dynamic>;
       final String authorizeUrl = data['authorize_url'] as String;
 
-      // Open the GitHub OAuth URL in a new tab/window
+      // Open the GitHub OAuth URL in a new tab/window or embedded webview
       final Uri url = Uri.parse(authorizeUrl);
       if (await canLaunchUrl(url)) {
-        await launchUrl(url, mode: LaunchMode.externalApplication);
+        await launchUrl(
+          url,
+          mode: LaunchMode.inAppBrowserView,
+        );
       }
 
       // After opening, we wait for the user to come back.
