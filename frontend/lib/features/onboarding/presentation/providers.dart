@@ -12,6 +12,7 @@
 library;
 
 import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:supabase_flutter/supabase_flutter.dart';
 
 import '../../../core/providers.dart';
 import '../../../core/router.dart';
@@ -82,7 +83,7 @@ class ProfileNotifier extends AsyncNotifier<Profile> {
     final ProfileRepository repo = ref.read(profileRepositoryProvider);
     await repo.deleteAccount();
     // After successful backend deletion, sign out locally.
-    await ref.read(authProvider.notifier).signOut();
+    await Supabase.instance.client.auth.signOut();
   }
 }
 

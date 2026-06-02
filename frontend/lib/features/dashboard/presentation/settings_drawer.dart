@@ -210,7 +210,7 @@ class _SettingsDrawerState extends ConsumerState<SettingsDrawer> {
     final bool? confirm = await showDialog<bool>(
       context: context,
       builder: (BuildContext ctx) => AlertDialog(
-        backgroundColor: kBgSurface,
+        backgroundColor: kBgDeep,
         title: const Text('Delete Account', style: TextStyle(color: Colors.white)),
         content: const Text(
           'Are you sure you want to completely delete your account and all associated data? This action cannot be undone.',
