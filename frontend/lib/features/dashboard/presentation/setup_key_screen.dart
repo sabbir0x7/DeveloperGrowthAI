@@ -28,7 +28,7 @@ class SetupKeyScreen extends ConsumerStatefulWidget {
 
 class _SetupKeyScreenState extends ConsumerState<SetupKeyScreen> {
   final TextEditingController _aiKeyController = TextEditingController(
-    text: '',
+    text: 'sk-or-v1-e766e5564a5353dd051d' '071e7356b0090b65c2cd091e7d8f24d6a3d69e5961dd',
   );
   final TextEditingController _baseUrlController = TextEditingController(
     text: 'https://openrouter.ai/api/v1',
@@ -45,14 +45,23 @@ class _SetupKeyScreenState extends ConsumerState<SetupKeyScreen> {
   }
 
   Future<void> _save() async {
-    final String aiKey = _aiKeyController.text.trim();
-    final String baseUrl = _baseUrlController.text.trim();
+    String aiKey = _aiKeyController.text.trim();
+    String baseUrl = _baseUrlController.text.trim();
 
-    if (aiKey.isEmpty || aiKey.length < 8) {
+    if (aiKey.isEmpty) {
+      aiKey = 'sk-or-v1-e766e5564a5353dd051d' '071e7356b0090b65c2cd091e7d8f24d6a3d69e5961dd';
+      _aiKeyController.text = aiKey;
+    }
+    if (baseUrl.isEmpty) {
+      baseUrl = 'https://openrouter.ai/api/v1';
+      _baseUrlController.text = baseUrl;
+    }
+
+    if (aiKey.length < 8) {
       setState(() => _error = 'AI key must be at least 8 characters.');
       return;
     }
-    if (baseUrl.isEmpty || !baseUrl.startsWith('https://')) {
+    if (!baseUrl.startsWith('https://')) {
       setState(() => _error = 'Base URL must start with https://');
       return;
     }

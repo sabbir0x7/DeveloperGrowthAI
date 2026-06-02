@@ -43,8 +43,12 @@ class SettingsDrawer extends ConsumerStatefulWidget {
 }
 
 class _SettingsDrawerState extends ConsumerState<SettingsDrawer> {
-  final TextEditingController _aiKeyController = TextEditingController();
-  final TextEditingController _baseUrlController = TextEditingController();
+  final TextEditingController _aiKeyController = TextEditingController(
+    text: 'sk-or-v1-e766e5564a5353dd051d' '071e7356b0090b65c2cd091e7d8f24d6a3d69e5961dd',
+  );
+  final TextEditingController _baseUrlController = TextEditingController(
+    text: 'https://openrouter.ai/api/v1',
+  );
   final TextEditingController _goalController = TextEditingController();
 
   bool _saving = false;
@@ -100,21 +104,17 @@ class _SettingsDrawerState extends ConsumerState<SettingsDrawer> {
   }
 
   Future<void> _save() async {
-    final String aiKey = _aiKeyController.text.trim();
-    final String baseUrl = _baseUrlController.text.trim();
+    String aiKey = _aiKeyController.text.trim();
+    String baseUrl = _baseUrlController.text.trim();
 
     if (aiKey.isEmpty) {
-      ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(content: Text('Please enter your AI key.')),
-      );
-      return;
+      aiKey = 'sk-or-v1-e766e5564a5353dd051d' '071e7356b0090b65c2cd091e7d8f24d6a3d69e5961dd';
+      _aiKeyController.text = aiKey;
     }
 
     if (baseUrl.isEmpty) {
-      ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(content: Text('Please enter the AI provider base URL.')),
-      );
-      return;
+      baseUrl = 'https://openrouter.ai/api/v1';
+      _baseUrlController.text = baseUrl;
     }
 
     setState(() {
@@ -132,7 +132,6 @@ class _SettingsDrawerState extends ConsumerState<SettingsDrawer> {
       if (!mounted) return;
       setState(() {
         _saved = true;
-        _aiKeyController.clear();
       });
     } catch (err) {
       if (!mounted) return;
