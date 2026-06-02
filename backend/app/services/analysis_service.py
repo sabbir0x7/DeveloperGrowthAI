@@ -212,6 +212,7 @@ async def run(
         {
             "user_id": str(user_id),
             "name": gap.name,
+            "category": "General",
             "gap_level": gap.gap_level,
             "updated_at": created_at_iso,
         }

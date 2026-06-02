@@ -21,6 +21,8 @@ import '../../../shared/widgets/glass_card.dart';
 import '../../../shared/widgets/gradient_text.dart';
 import '../../../shared/widgets/neon_button.dart';
 import '../../../shared/widgets/shimmer_loader.dart';
+import '../../onboarding/domain/profile.dart';
+import '../../onboarding/presentation/providers.dart';
 import '../domain/analysis_models.dart';
 import 'providers.dart';
 
@@ -43,24 +45,57 @@ class SettingsDrawer extends ConsumerStatefulWidget {
 class _SettingsDrawerState extends ConsumerState<SettingsDrawer> {
   final TextEditingController _aiKeyController = TextEditingController();
   final TextEditingController _baseUrlController = TextEditingController();
+  final TextEditingController _goalController = TextEditingController();
 
   bool _saving = false;
   bool _saved = false;
+  bool _baseUrlPrefilled = false;
+
+  bool _savingGoal = false;
+  bool _goalSaved = false;
+  bool _goalPrefilled = false;
 
   @override
   void initState() {
     super.initState();
-    // Pre-fill the base URL from current settings if available.
+    // Try to pre-fill base URL synchronously if settings are already loaded.
     final AsyncValue<Settings> settings = ref.read(settingsProvider);
     settings.whenData((Settings s) {
       _baseUrlController.text = s.aiProviderBaseUrl;
+      _baseUrlPrefilled = true;
     });
+  }
+
+  @override
+  void didChangeDependencies() {
+    super.didChangeDependencies();
+    // Pre-fill base URL as soon as settingsProvider resolves (handles the
+    // case where initState runs before the provider has data).
+    if (!_baseUrlPrefilled) {
+      final AsyncValue<Settings> settings = ref.read(settingsProvider);
+      settings.whenData((Settings s) {
+        if (!_baseUrlPrefilled && s.aiProviderBaseUrl.isNotEmpty) {
+          _baseUrlController.text = s.aiProviderBaseUrl;
+          _baseUrlPrefilled = true;
+        }
+      });
+    }
+    if (!_goalPrefilled) {
+      final AsyncValue<Profile> profile = ref.read(profileProvider);
+      profile.whenData((Profile p) {
+        if (!_goalPrefilled && p.goal != null) {
+          _goalController.text = p.goal!;
+          _goalPrefilled = true;
+        }
+      });
+    }
   }
 
   @override
   void dispose() {
     _aiKeyController.dispose();
     _baseUrlController.dispose();
+    _goalController.dispose();
     super.dispose();
   }
 
@@ -111,6 +146,55 @@ class _SettingsDrawerState extends ConsumerState<SettingsDrawer> {
     }
   }
 
+  Future<void> _saveGoal() async {
+    final String goal = _goalController.text.trim();
+    if (goal.isEmpty) {
+      ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(content: Text('Please enter a goal.')),
+      );
+      return;
+    }
+
+    setState(() {
+      _savingGoal = true;
+      _goalSaved = false;
+    });
+
+    try {
+      await ref.read(profileProvider.notifier).patch(ProfilePatch(goal: goal));
+      
+      try {
+        await ref.read(analysisProvider(goal).future);
+        ref.invalidate(latestAnalysisProvider);
+      } catch (aiErr) {
+        ref.invalidate(latestAnalysisProvider);
+        if (!mounted) return;
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(content: Text('Goal saved, but AI update failed: $aiErr')),
+        );
+        return;
+      }
+
+      if (!mounted) return;
+      setState(() {
+        _goalSaved = true;
+      });
+      Navigator.of(context).pop();
+      ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(content: Text('Goal updated & dashboard refreshed!')),
+      );
+    } catch (err) {
+      if (!mounted) return;
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(content: Text('Failed to update goal: $err')),
+      );
+    } finally {
+      if (mounted) {
+        setState(() => _savingGoal = false);
+      }
+    }
+  }
+
   Future<void> _logout() async {
     try {
       await supabase.auth.signOut();
@@ -126,13 +210,31 @@ class _SettingsDrawerState extends ConsumerState<SettingsDrawer> {
     final ThemeData theme = Theme.of(context);
     final AsyncValue<Settings> settingsAsync = ref.watch(settingsProvider);
 
+    // When settings load for the first time (async), pre-fill base URL.
+    ref.listen<AsyncValue<Settings>>(settingsProvider, (_, next) {
+      next.whenData((Settings s) {
+        if (!_baseUrlPrefilled && s.aiProviderBaseUrl.isNotEmpty) {
+          _baseUrlController.text = s.aiProviderBaseUrl;
+          _baseUrlPrefilled = true;
+        }
+      });
+    });
+
+    ref.listen<AsyncValue<Profile>>(profileProvider, (_, next) {
+      next.whenData((Profile p) {
+        if (!_goalPrefilled && p.goal != null) {
+          _goalController.text = p.goal!;
+          _goalPrefilled = true;
+        }
+      });
+    });
+
     return Drawer(
       backgroundColor: kBgDeep,
       child: SafeArea(
         child: Padding(
           padding: const EdgeInsets.all(20),
-          child: Column(
-            crossAxisAlignment: CrossAxisAlignment.stretch,
+          child: ListView(
             children: <Widget>[
               GradientText(
                 'Settings',
@@ -269,7 +371,46 @@ class _SettingsDrawerState extends ConsumerState<SettingsDrawer> {
                   ],
                 ),
               ],
-              const Spacer(),
+              
+              const SizedBox(height: 32),
+              
+              GradientText(
+                'Career Goal',
+                style: theme.textTheme.titleMedium,
+              ),
+              const SizedBox(height: 16),
+              TextField(
+                controller: _goalController,
+                enabled: !_savingGoal,
+                style: const TextStyle(color: Colors.white),
+                maxLines: 2,
+                decoration: InputDecoration(
+                  labelText: 'Your Goal',
+                  hintText: 'e.g., Become a Senior Flutter Developer',
+                  border: OutlineInputBorder(
+                    borderRadius: BorderRadius.circular(12),
+                  ),
+                  enabledBorder: OutlineInputBorder(
+                    borderRadius: BorderRadius.circular(12),
+                    borderSide: const BorderSide(color: Color(0x33FFFFFF)),
+                  ),
+                  focusedBorder: OutlineInputBorder(
+                    borderRadius: BorderRadius.circular(12),
+                    borderSide:
+                        const BorderSide(color: kNeonCyan, width: 1.5),
+                  ),
+                ),
+              ),
+              const SizedBox(height: 16),
+              NeonButton(
+                label: 'Update Goal & Refresh',
+                icon: Icons.track_changes,
+                color: kNeonCyan,
+                isLoading: _savingGoal,
+                onPressed: _savingGoal ? null : _saveGoal,
+              ),
+
+              const SizedBox(height: 32),
               // Logout button
               NeonButton(
                 label: 'Log out',

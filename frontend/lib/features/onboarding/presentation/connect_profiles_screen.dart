@@ -23,6 +23,7 @@ import '../../../shared/widgets/animated_background.dart';
 import '../../../shared/widgets/glass_card.dart';
 import '../../../shared/widgets/gradient_text.dart';
 import '../../../shared/widgets/neon_button.dart';
+import '../../../shared/widgets/settings_scaffold.dart';
 import '../domain/profile.dart';
 import 'providers.dart';
 
@@ -239,8 +240,7 @@ class _ConnectProfilesScreenState
   Widget build(BuildContext context) {
     final ThemeData theme = Theme.of(context);
 
-    return Scaffold(
-      backgroundColor: Colors.transparent,
+    return SettingsScaffold(
       body: AnimatedBackground(
         child: SafeArea(
           child: Center(

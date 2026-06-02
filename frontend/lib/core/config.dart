@@ -15,24 +15,22 @@ library;
 
 /// Supabase project URL.
 ///
-/// Defaults to a local Supabase emulator/dev instance.
+/// Defaults to the production Supabase project.
 const String kSupabaseUrl = String.fromEnvironment(
   'SUPABASE_URL',
-  defaultValue: 'http://127.0.0.1:54321',
+  defaultValue: 'https://najksralfmbsmsjdcstl.supabase.co',
 );
 
 /// Supabase anonymous (publishable) key.
-///
-/// Defaults to an empty string so misconfiguration surfaces immediately
-/// during `Supabase.initialize` rather than silently using a stale value.
 const String kSupabaseAnonKey = String.fromEnvironment(
   'SUPABASE_ANON_KEY',
-  defaultValue: '',
+  defaultValue: 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Im5hamtzcmFsZm1ic21zamRjc3RsIiwicm9sZSI6ImFub24iLCJpYXQiOjE3Nzk2OTU2MDksImV4cCI6MjA5NTI3MTYwOX0.t7EMNL7XbCLy_Xe3M0YSD5Eh0RaWV10R1XB6dEMKMG8',
 );
 
 /// Base URL of the FastAPI backend.
 ///
-/// Defaults to the local uvicorn dev server.
+/// Defaults to the local uvicorn dev server for local testing.
+/// For production APK use: https://developergrowthai.onrender.com
 const String kApiBaseUrl = String.fromEnvironment(
   'API_BASE_URL',
   defaultValue: 'http://127.0.0.1:8000',

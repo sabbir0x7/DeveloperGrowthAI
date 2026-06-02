@@ -23,6 +23,7 @@ import '../../../shared/widgets/animated_background.dart';
 import '../../../shared/widgets/glass_card.dart';
 import '../../../shared/widgets/gradient_text.dart';
 import '../../../shared/widgets/neon_button.dart';
+import '../../../shared/widgets/settings_scaffold.dart';
 import '../../dashboard/data/analysis_repository.dart';
 import '../../dashboard/presentation/providers.dart';
 import '../domain/profile.dart';
@@ -188,8 +189,7 @@ class _SetGoalScreenState extends ConsumerState<SetGoalScreen> {
     final bool overLimit = length > kGoalMaxLength;
     final Color counterColor = overLimit ? kNeonPink : Colors.white70;
 
-    return Scaffold(
-      backgroundColor: Colors.transparent,
+    return SettingsScaffold(
       body: AnimatedBackground(
         child: SafeArea(
           child: Center(

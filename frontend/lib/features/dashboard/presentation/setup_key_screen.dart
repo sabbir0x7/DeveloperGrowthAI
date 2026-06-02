@@ -14,6 +14,7 @@ import '../../../shared/widgets/animated_background.dart';
 import '../../../shared/widgets/glass_card.dart';
 import '../../../shared/widgets/gradient_text.dart';
 import '../../../shared/widgets/neon_button.dart';
+import '../../../shared/widgets/settings_scaffold.dart';
 import '../domain/analysis_models.dart';
 import 'providers.dart';
 
@@ -26,9 +27,11 @@ class SetupKeyScreen extends ConsumerStatefulWidget {
 }
 
 class _SetupKeyScreenState extends ConsumerState<SetupKeyScreen> {
-  final TextEditingController _aiKeyController = TextEditingController();
+  final TextEditingController _aiKeyController = TextEditingController(
+    text: '',
+  );
   final TextEditingController _baseUrlController = TextEditingController(
-    text: 'https://generativelanguage.googleapis.com/v1beta/openai',
+    text: 'https://openrouter.ai/api/v1',
   );
 
   bool _saving = false;
@@ -83,8 +86,7 @@ class _SetupKeyScreenState extends ConsumerState<SetupKeyScreen> {
   Widget build(BuildContext context) {
     final ThemeData theme = Theme.of(context);
 
-    return Scaffold(
-      backgroundColor: Colors.transparent,
+    return SettingsScaffold(
       body: AnimatedBackground(
         child: SafeArea(
           child: Center(
