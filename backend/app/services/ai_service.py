@@ -67,8 +67,20 @@ SYSTEM_INSTRUCTION = (
     '  "github_analysis": object,\n'
     '  "linkedin_analysis": object,\n'
     '  "skill_gaps": [\n'
-    '    { "name": string, "gap_level": "low" | "medium" | "high", '
-    '"rationale": string }\n'
+    "    {\n"
+    '      "name": string (the skill name),\n'
+    '      "gap_level": "low" | "medium" | "high",\n'
+    '      "rationale": string (detailed explanation of WHY this is a gap '
+    "and HOW it was identified from their profile),\n"
+    '      "current_level": string (describe where the candidate currently '
+    "stands in this skill based on their profile evidence),\n"
+    '      "target_level": string (describe where they need to be for '
+    "their stated career goal),\n"
+    '      "importance": string (explain why closing this gap is critical '
+    "for achieving their career goal),\n"
+    '      "resources": [string] (2-4 specific learning resources: '
+    "courses, books, documentation, or project ideas)\n"
+    "    }\n"
     "  ],\n"
     '  "suggestions": [\n'
     '    { "title": string, "description": string, '
@@ -77,6 +89,10 @@ SYSTEM_INSTRUCTION = (
     '"steps": [string] (week-by-week action items, 3-6 steps) }\n'
     "  ]\n"
     "}\n\n"
+    "For each skill gap, provide a thorough analysis: explain the current "
+    "proficiency based on their GitHub repos and LinkedIn experience, what "
+    "level they need to reach, why it matters for their goal, and specific "
+    "resources to close the gap.\n"
     "For each suggestion, provide a realistic timeline and concrete "
     "week-by-week steps the candidate should follow. "
     "Respond with valid JSON only."
@@ -89,8 +105,9 @@ SCHEMA_REMINDER = (
     "Your previous response did not parse against the required schema. "
     "Respond with a single JSON object containing exactly these keys: "
     "github_analysis (object), linkedin_analysis (object), skill_gaps "
-    "(array of objects), suggestions (array of objects). Do not include "
-    "any text outside the JSON object."
+    "(array of objects with keys: name, gap_level, rationale, "
+    "current_level, target_level, importance, resources), suggestions "
+    "(array of objects). Do not include any text outside the JSON object."
 )
 
 

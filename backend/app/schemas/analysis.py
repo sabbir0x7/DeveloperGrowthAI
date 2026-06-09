@@ -51,11 +51,21 @@ class SkillGap(BaseModel):
 
     ``gap_level`` is constrained to a closed set so it can be persisted into
     ``skills.gap_level`` without a second round of validation downstream.
+
+    Extended fields provide richer context for the frontend:
+    - ``current_level``: where the user currently stands in this skill.
+    - ``target_level``: where they need to be for their career goal.
+    - ``importance``: why closing this gap matters for the goal.
+    - ``resources``: concrete learning resources (courses, docs, projects).
     """
 
     name: str
     gap_level: Literal["low", "medium", "high"]
     rationale: str
+    current_level: str = ""
+    target_level: str = ""
+    importance: str = ""
+    resources: list[str] = []
 
 
 class Suggestion(BaseModel):

@@ -51,19 +51,33 @@ class SkillGap {
     required this.name,
     required this.gapLevel,
     required this.rationale,
+    this.currentLevel = '',
+    this.targetLevel = '',
+    this.importance = '',
+    this.resources = const <String>[],
   });
 
   factory SkillGap.fromJson(Map<String, dynamic> json) {
+    final List<dynamic> rawResources =
+        (json['resources'] as List<dynamic>? ?? const <dynamic>[]);
     return SkillGap(
       name: json['name'] as String,
       gapLevel: _parseGapLevel(json['gap_level'] as String),
       rationale: json['rationale'] as String,
+      currentLevel: json['current_level'] as String? ?? '',
+      targetLevel: json['target_level'] as String? ?? '',
+      importance: json['importance'] as String? ?? '',
+      resources: rawResources.map((dynamic e) => e.toString()).toList(growable: false),
     );
   }
 
   final String name;
   final GapLevel gapLevel;
   final String rationale;
+  final String currentLevel;
+  final String targetLevel;
+  final String importance;
+  final List<String> resources;
 }
 
 /// One row in `analysis.suggestions`.
