@@ -184,7 +184,10 @@ async def github_callback(
 
         # Store GitHub data in users table
         sb.table("users").update(
-            {"github_data": github_data}
+            {
+                "github_data": github_data,
+                "github_url": github_data.get("profile_url") or "https://github.com/connected"
+            }
         ).eq("id", str(user_id)).execute()
 
     except Exception:

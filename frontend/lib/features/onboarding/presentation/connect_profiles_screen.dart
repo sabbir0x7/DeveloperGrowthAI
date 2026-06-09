@@ -144,9 +144,19 @@ class _ConnectProfilesScreenState
       );
 
       if (result == true) {
-        setState(() {
-          _githubConnected = true;
-        });
+        // Verify authorization by fetching the updated profile
+        ref.invalidate(profileProvider);
+        final profile = await ref.read(profileProvider.future);
+        if (profile.githubUrl != null) {
+          setState(() {
+            _githubConnected = true;
+          });
+        } else {
+          if (!mounted) return;
+          ScaffoldMessenger.of(context).showSnackBar(
+            const SnackBar(content: Text('Not authorized yet. Please complete the process in your browser.')),
+          );
+        }
       }
     } catch (e) {
       if (!mounted) return;
@@ -210,9 +220,19 @@ class _ConnectProfilesScreenState
       );
 
       if (result == true) {
-        setState(() {
-          _linkedinConnected = true;
-        });
+        // Verify authorization by fetching the updated profile
+        ref.invalidate(profileProvider);
+        final profile = await ref.read(profileProvider.future);
+        if (profile.linkedinUrl != null) {
+          setState(() {
+            _linkedinConnected = true;
+          });
+        } else {
+          if (!mounted) return;
+          ScaffoldMessenger.of(context).showSnackBar(
+            const SnackBar(content: Text('Not authorized yet. Please complete the process in your browser.')),
+          );
+        }
       }
     } catch (e) {
       if (!mounted) return;
