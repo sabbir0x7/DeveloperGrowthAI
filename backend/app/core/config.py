@@ -36,12 +36,12 @@ class Settings(BaseSettings):
     # --- GitHub OAuth ---
     GITHUB_CLIENT_ID: str = ""
     GITHUB_CLIENT_SECRET: str = ""
-    GITHUB_REDIRECT_URI: str = "http://localhost:8000/api/v1/auth/github/callback"
+    GITHUB_REDIRECT_URI: str = "https://developergrowthai.onrender.com/api/v1/auth/github/callback"
 
     # --- LinkedIn OAuth ---
     LINKEDIN_CLIENT_ID: str = ""
     LINKEDIN_CLIENT_SECRET: str = ""
-    LINKEDIN_REDIRECT_URI: str = "http://localhost:8000/api/v1/auth/linkedin/callback"
+    LINKEDIN_REDIRECT_URI: str = "https://developergrowthai.onrender.com/api/v1/auth/linkedin/callback"
 
     # --- AI provider defaults ---
     AI_API_KEY_DEFAULT: str = ""
