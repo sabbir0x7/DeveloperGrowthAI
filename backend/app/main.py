@@ -30,6 +30,7 @@ from slowapi.middleware import SlowAPIMiddleware
 from app.api.v1.analysis import router as analysis_router
 from app.api.v1.auth import router as auth_router
 from app.api.v1.github_oauth import router as github_oauth_router
+from app.api.v1.linkedin_oauth import router as linkedin_oauth_router
 from app.api.v1.profile import router as profile_router
 from app.core.security import InvalidToken
 from app.middleware.rate_limit import limiter, rate_limit_exceeded_handler
@@ -132,6 +133,7 @@ def create_app() -> FastAPI:
     # ------------------------------------------------------------------
     application.include_router(auth_router, prefix="/api/v1")
     application.include_router(github_oauth_router, prefix="/api/v1")
+    application.include_router(linkedin_oauth_router, prefix="/api/v1")
     application.include_router(profile_router, prefix="/api/v1")
     application.include_router(analysis_router, prefix="/api/v1")
 

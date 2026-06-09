@@ -47,16 +47,16 @@ class _ConnectProfilesScreenState
     extends ConsumerState<ConnectProfilesScreen> {
   bool _githubConnected = false;
   bool _githubConnecting = false;
-  bool _linkedinUploaded = false;
-  bool _linkedinUploading = false;
-  String? _linkedinPreview;
+  bool _linkedinConnected = false;
+  bool _linkedinConnecting = false;
   bool _continuing = false;
 
   @override
   void initState() {
     super.initState();
-    // Check if returning from GitHub OAuth with success parameter
+    // Check if returning from GitHub or LinkedIn OAuth with success parameters
     _checkGithubCallback();
+    _checkLinkedinCallback();
   }
 
   void _checkGithubCallback() {
@@ -71,6 +71,21 @@ class _ConnectProfilesScreenState
         if (fragment.contains('github=success')) {
           setState(() {
             _githubConnected = true;
+          });
+        }
+      });
+    }
+  }
+
+  void _checkLinkedinCallback() {
+    // For Flutter web, check the URL fragment for linkedin=success
+    if (kIsWeb) {
+      WidgetsBinding.instance.addPostFrameCallback((_) {
+        final Uri uri = Uri.base;
+        final String fragment = uri.fragment;
+        if (fragment.contains('linkedin=success')) {
+          setState(() {
+            _linkedinConnected = true;
           });
         }
       });
@@ -145,70 +160,68 @@ class _ConnectProfilesScreenState
     }
   }
 
-  Future<void> _uploadLinkedinPdf() async {
-    if (_linkedinUploading) return;
+  Future<void> _connectLinkedin() async {
+    if (_linkedinConnecting) return;
 
-    setState(() => _linkedinUploading = true);
+    setState(() => _linkedinConnecting = true);
 
     try {
-      // Open file picker for PDF
-      final FilePickerResult? result = await FilePicker.platform.pickFiles(
-        type: FileType.custom,
-        allowedExtensions: <String>['pdf'],
-        withData: true,
-      );
-
-      if (result == null || result.files.isEmpty) {
-        // User cancelled
-        return;
-      }
-
-      final PlatformFile file = result.files.first;
-      if (file.bytes == null) {
-        if (!mounted) return;
-        ScaffoldMessenger.of(context).showSnackBar(
-          const SnackBar(content: Text('Could not read file data.')),
-        );
-        return;
-      }
-
-      // Upload to backend
-      final FormData formData = FormData.fromMap(<String, dynamic>{
-        'file': MultipartFile.fromBytes(
-          file.bytes!,
-          filename: file.name,
-        ),
-      });
-
       final Dio dio = ref.read(dioProvider);
-      final Response<dynamic> response = await dio.post<dynamic>(
-        '/api/v1/profile/linkedin-pdf',
-        data: formData,
+
+      final Response<dynamic> response = await dio.get<dynamic>(
+        '/api/v1/auth/linkedin/connect',
       );
 
       final Map<String, dynamic> data = response.data as Map<String, dynamic>;
-      final String preview = data['preview'] as String? ?? '';
-      final int textLength = data['text_length'] as int? ?? 0;
+      final String authorizeUrl = data['authorize_url'] as String;
 
-      setState(() {
-        _linkedinUploaded = true;
-        _linkedinPreview = '$textLength chars extracted: $preview';
-      });
+      // Open the LinkedIn OAuth URL in a new tab/window
+      final Uri url = Uri.parse(authorizeUrl);
+      if (await canLaunchUrl(url)) {
+        await launchUrl(
+          url,
+          mode: LaunchMode.externalApplication,
+        );
+      }
 
+      // After opening, we wait for the user to come back.
+      // The callback will redirect to /#/connect?linkedin=success
       if (!mounted) return;
-      ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(
-          content: Text('LinkedIn PDF uploaded ($textLength chars extracted)'),
+      final bool? result = await showDialog<bool>(
+        context: context,
+        barrierDismissible: false,
+        builder: (BuildContext ctx) => AlertDialog(
+          title: const Text('LinkedIn Connection'),
+          content: const Text(
+            'Complete the LinkedIn authorization in your browser.\n\n'
+            'Click "Done" once you\'ve authorized the app.',
+          ),
+          actions: <Widget>[
+            TextButton(
+              onPressed: () => Navigator.of(ctx).pop(false),
+              child: const Text('Cancel'),
+            ),
+            FilledButton(
+              onPressed: () => Navigator.of(ctx).pop(true),
+              child: const Text('Done'),
+            ),
+          ],
         ),
       );
+
+      if (result == true) {
+        setState(() {
+          _linkedinConnected = true;
+        });
+      }
     } catch (e) {
       if (!mounted) return;
       ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(content: Text('Failed to upload PDF: $e')),
+        SnackBar(content: Text('Failed to connect LinkedIn: $e')),
       );
     } finally {
       if (mounted) {
-        setState(() => _linkedinUploading = false);
+        setState(() => _linkedinConnecting = false);
       }
     }
   }
@@ -268,8 +281,8 @@ class _ConnectProfilesScreenState
                       ),
                       const SizedBox(height: 12),
                       Text(
-                        'Connect your GitHub account and optionally upload '
-                        'your LinkedIn PDF for a richer analysis.',
+                        'Connect your GitHub and LinkedIn accounts '
+                        'to generate your personalized career analysis.',
                         textAlign: TextAlign.center,
                         style: theme.textTheme.bodyMedium,
                       ),
@@ -292,22 +305,22 @@ class _ConnectProfilesScreenState
 
                       const SizedBox(height: 16),
 
-                      // --- LinkedIn PDF Upload ---
+                      // --- LinkedIn Connect ---
                       _buildConnectionCard(
-                        icon: Icons.description,
-                        title: 'LinkedIn PDF',
-                        subtitle: _linkedinUploaded
-                            ? _linkedinPreview ?? 'Uploaded'
-                            : 'Upload your LinkedIn profile PDF (optional)',
-                        isConnected: _linkedinUploaded,
-                        isLoading: _linkedinUploading,
+                        icon: Icons.link,
+                        title: 'LinkedIn',
+                        subtitle: _linkedinConnected
+                            ? 'Connected'
+                            : 'Connect for profile analysis (optional)',
+                        isConnected: _linkedinConnected,
+                        isLoading: _linkedinConnecting,
                         buttonKey:
                             ConnectProfilesScreen.uploadLinkedinButtonKey,
-                        buttonLabel: _linkedinUploaded
-                            ? 'Uploaded'
-                            : 'Upload LinkedIn PDF',
+                        buttonLabel: _linkedinConnected
+                            ? 'Connected'
+                            : 'Connect LinkedIn',
                         onPressed:
-                            _linkedinUploaded ? null : _uploadLinkedinPdf,
+                            _linkedinConnected ? null : _connectLinkedin,
                       ),
 
                       const SizedBox(height: 32),

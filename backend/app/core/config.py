@@ -38,6 +38,11 @@ class Settings(BaseSettings):
     GITHUB_CLIENT_SECRET: str = ""
     GITHUB_REDIRECT_URI: str = "http://localhost:8000/api/v1/auth/github/callback"
 
+    # --- LinkedIn OAuth ---
+    LINKEDIN_CLIENT_ID: str = ""
+    LINKEDIN_CLIENT_SECRET: str = ""
+    LINKEDIN_REDIRECT_URI: str = "http://localhost:8000/api/v1/auth/linkedin/callback"
+
     # --- AI provider defaults ---
     AI_API_KEY_DEFAULT: str = ""
     AI_MODEL_DEFAULT: str = "gpt-4o-mini"

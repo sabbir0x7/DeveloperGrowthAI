@@ -173,7 +173,7 @@ class _SkillGapCardState extends State<_SkillGapCard>
 
     return GlassCard(
       padding: EdgeInsets.zero,
-      borderColor: _expanded ? color.withValues(alpha: 0.4) : null,
+      borderColor: _expanded ? color.withValues(alpha: 0.4) : const Color(0x33FFFFFF),
       child: InkWell(
         borderRadius: BorderRadius.circular(16),
         onTap: hasDetails ? () => setState(() => _expanded = !_expanded) : null,
