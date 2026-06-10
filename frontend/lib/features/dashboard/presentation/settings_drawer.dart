@@ -159,6 +159,10 @@ class _SettingsDrawerState extends ConsumerState<SettingsDrawer> {
       _goalSaved = false;
     });
 
+    final scaffoldMessenger = ScaffoldMessenger.of(context);
+    final router = GoRouter.of(context);
+    final navigator = Navigator.of(context);
+
     ref.read(profileAnalysisStateProvider.notifier).runAnalysis(
       goal: goal,
       onSuccess: () {
@@ -166,15 +170,15 @@ class _SettingsDrawerState extends ConsumerState<SettingsDrawer> {
         setState(() {
           _goalSaved = true;
         });
-        Navigator.of(context).pop();
-        ScaffoldMessenger.of(context).showSnackBar(
+        navigator.pop();
+        scaffoldMessenger.showSnackBar(
           const SnackBar(content: Text('Goal updated & dashboard refreshed!')),
         );
-        context.go(AppRoutes.dashboard);
+        router.go(AppRoutes.dashboard);
       },
       onError: (Object err) {
         if (!mounted) return;
-        ScaffoldMessenger.of(context).showSnackBar(
+        scaffoldMessenger.showSnackBar(
           SnackBar(content: Text('Failed to update goal: $err')),
         );
       },
