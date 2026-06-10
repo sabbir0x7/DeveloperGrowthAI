@@ -152,8 +152,9 @@ class ProfileAnalysisStateNotifier extends Notifier<bool> {
       // Step 2: Run analysis immediately
       await ref.read(analysisProvider(goal).future);
 
-      // Step 3: Refresh latest analysis
+      // Step 3: Refresh latest analysis and wait for the data
       ref.invalidate(latestAnalysisProvider);
+      await ref.read(latestAnalysisProvider.future);
       
       // Step 4: Success block
       onSuccess();
