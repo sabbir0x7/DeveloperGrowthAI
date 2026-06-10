@@ -17,7 +17,7 @@ import 'package:supabase_flutter/supabase_flutter.dart';
 import '../../../core/providers.dart';
 import '../../../core/router.dart';
 import '../../auth/presentation/providers.dart';
-import '../../dashboard/presentation/providers.dart' show settingsProvider;
+import '../../dashboard/presentation/providers.dart' show settingsProvider, analysisProvider, latestAnalysisProvider;
 import '../data/profile_repository.dart';
 import '../domain/profile.dart';
 
@@ -124,4 +124,48 @@ final Provider<RouteGuardProfile?> routeGuardProfileProvider =
     ),
     orElse: () => null,
   );
+});
+
+/// Notifier to manage the profile analysis execution state globally.
+/// Fixes issues where the analysis spinner turns off prematurely if
+/// the user navigates away, and ensures the UI properly redirects
+/// inside the success block.
+class ProfileAnalysisStateNotifier extends StateNotifier<bool> {
+  ProfileAnalysisStateNotifier(this.ref) : super(false);
+  final Ref ref;
+
+  Future<void> runAnalysis({
+    required String goal,
+    required void Function() onSuccess,
+    required void Function(Object error) onError,
+  }) async {
+    if (state) return;
+    
+    // Set loading state globally
+    state = true;
+    
+    try {
+      // Step 1: Save the goal
+      await ref.read(profileProvider.notifier).patch(ProfilePatch(goal: goal));
+
+      // Step 2: Run analysis immediately
+      await ref.read(analysisProvider(goal).future);
+
+      // Step 3: Refresh latest analysis
+      ref.invalidate(latestAnalysisProvider);
+      
+      // Step 4: Success block
+      onSuccess();
+    } catch (e) {
+      onError(e);
+    } finally {
+      // Set spinning state to false inside finally block
+      state = false;
+    }
+  }
+}
+
+/// Exposes the global loading state of the Profile Analysis.
+final profileAnalysisStateProvider = StateNotifierProvider<ProfileAnalysisStateNotifier, bool>((ref) {
+  return ProfileAnalysisStateNotifier(ref);
 });

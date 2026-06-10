@@ -88,9 +88,6 @@ class _SetGoalScreenState extends ConsumerState<SetGoalScreen> {
   /// does not display as "invalid" on mount.
   bool _showError = false;
 
-  /// True while a `PATCH /profile/me` is in flight.
-  bool _submitting = false;
-
   @override
   void initState() {
     super.initState();
@@ -135,55 +132,45 @@ class _SetGoalScreenState extends ConsumerState<SetGoalScreen> {
     setState(() {
       _error = null;
       _showError = true;
-      _submitting = true;
     });
 
     final String trimmed = raw.trim();
-    try {
-      // Step 1: Save the goal
-      await ref
-          .read(profileProvider.notifier)
-          .patch(ProfilePatch(goal: trimmed));
-
-      // Step 2: Run analysis immediately
-      await ref.read(analysisProvider(trimmed).future);
-
-      // Step 3: Refresh latest analysis and navigate to dashboard
-      ref.invalidate(latestAnalysisProvider);
-      if (!mounted) return;
-      context.go(AppRoutes.dashboard);
-    } on MissingAIKeyException {
-      if (!mounted) return;
-      setState(() {
-        _error = 'AI key not configured. Please go back and set it up.';
-      });
-    } on AnalysisRateLimitedException catch (e) {
-      if (!mounted) return;
-      setState(() {
-        _error = 'Rate limited. Retry in ${e.retryAfterSeconds ?? 60}s.';
-      });
-    } on UpstreamAIException {
-      if (!mounted) return;
-      setState(() {
-        _error = 'AI service temporarily unavailable. Try again.';
-      });
-    } catch (err) {
-      if (!mounted) return;
-      setState(() {
-        _error = 'Something went wrong. Please try again.';
-      });
-      ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(content: Text('Error: $err')),
-      );
-    } finally {
-      if (mounted) {
-        setState(() => _submitting = false);
-      }
-    }
+    ref.read(profileAnalysisStateProvider.notifier).runAnalysis(
+      goal: trimmed,
+      onSuccess: () {
+        if (mounted) {
+          context.go(AppRoutes.dashboard);
+        }
+      },
+      onError: (Object err) {
+        if (!mounted) return;
+        if (err is MissingAIKeyException) {
+          setState(() {
+            _error = 'AI key not configured. Please go back and set it up.';
+          });
+        } else if (err is AnalysisRateLimitedException) {
+          setState(() {
+            _error = 'Rate limited. Retry in ${err.retryAfterSeconds ?? 60}s.';
+          });
+        } else if (err is UpstreamAIException) {
+          setState(() {
+            _error = 'AI service temporarily unavailable. Try again.';
+          });
+        } else {
+          setState(() {
+            _error = 'Something went wrong. Please try again.';
+          });
+          ScaffoldMessenger.of(context).showSnackBar(
+            SnackBar(content: Text('Error: $err')),
+          );
+        }
+      },
+    );
   }
 
   @override
   Widget build(BuildContext context) {
+    final bool _submitting = ref.watch(profileAnalysisStateProvider);
     final ThemeData theme = Theme.of(context);
     final int length = _controller.text.length;
     final bool overLimit = length > kGoalMaxLength;
