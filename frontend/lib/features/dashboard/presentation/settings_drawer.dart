@@ -55,7 +55,6 @@ class _SettingsDrawerState extends ConsumerState<SettingsDrawer> {
   bool _saved = false;
   bool _baseUrlPrefilled = false;
 
-  bool _savingGoal = false;
   bool _goalSaved = false;
   bool _goalPrefilled = false;
 
@@ -157,43 +156,29 @@ class _SettingsDrawerState extends ConsumerState<SettingsDrawer> {
     }
 
     setState(() {
-      _savingGoal = true;
       _goalSaved = false;
     });
 
-    try {
-      await ref.read(profileProvider.notifier).patch(ProfilePatch(goal: goal));
-      
-      try {
-        await ref.read(analysisProvider(goal).future);
-        ref.invalidate(latestAnalysisProvider);
-      } catch (aiErr) {
-        ref.invalidate(latestAnalysisProvider);
+    ref.read(profileAnalysisStateProvider.notifier).runAnalysis(
+      goal: goal,
+      onSuccess: () {
+        if (!mounted) return;
+        setState(() {
+          _goalSaved = true;
+        });
+        Navigator.of(context).pop();
+        ScaffoldMessenger.of(context).showSnackBar(
+          const SnackBar(content: Text('Goal updated & dashboard refreshed!')),
+        );
+        context.go(AppRoutes.dashboard);
+      },
+      onError: (Object err) {
         if (!mounted) return;
         ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(content: Text('Goal saved, but AI update failed: $aiErr')),
+          SnackBar(content: Text('Failed to update goal: $err')),
         );
-        return;
-      }
-
-      if (!mounted) return;
-      setState(() {
-        _goalSaved = true;
-      });
-      Navigator.of(context).pop();
-      ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(content: Text('Goal updated & dashboard refreshed!')),
-      );
-    } catch (err) {
-      if (!mounted) return;
-      ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(content: Text('Failed to update goal: $err')),
-      );
-    } finally {
-      if (mounted) {
-        setState(() => _savingGoal = false);
-      }
-    }
+      },
+    );
   }
 
   Future<void> _logout() async {
@@ -251,6 +236,7 @@ class _SettingsDrawerState extends ConsumerState<SettingsDrawer> {
 
   @override
   Widget build(BuildContext context) {
+    final bool _savingGoal = ref.watch(profileAnalysisStateProvider);
     final ThemeData theme = Theme.of(context);
     final AsyncValue<Settings> settingsAsync = ref.watch(settingsProvider);
 
