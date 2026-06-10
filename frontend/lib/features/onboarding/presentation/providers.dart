@@ -20,6 +20,7 @@ import '../../auth/presentation/providers.dart';
 import '../../dashboard/presentation/providers.dart' show settingsProvider, analysisProvider, latestAnalysisProvider;
 import '../data/profile_repository.dart';
 import '../domain/profile.dart';
+import 'package:flutter_riverpod/flutter_riverpod.dart';
 
 /// Repository accessor.
 ///
@@ -130,9 +131,9 @@ final Provider<RouteGuardProfile?> routeGuardProfileProvider =
 /// Fixes issues where the analysis spinner turns off prematurely if
 /// the user navigates away, and ensures the UI properly redirects
 /// inside the success block.
-class ProfileAnalysisStateNotifier extends StateNotifier<bool> {
-  ProfileAnalysisStateNotifier(this.ref) : super(false);
-  final Ref ref;
+class ProfileAnalysisStateNotifier extends Notifier<bool> {
+  @override
+  bool build() => false;
 
   Future<void> runAnalysis({
     required String goal,
@@ -166,6 +167,4 @@ class ProfileAnalysisStateNotifier extends StateNotifier<bool> {
 }
 
 /// Exposes the global loading state of the Profile Analysis.
-final profileAnalysisStateProvider = StateNotifierProvider<ProfileAnalysisStateNotifier, bool>((ref) {
-  return ProfileAnalysisStateNotifier(ref);
-});
+final profileAnalysisStateProvider = NotifierProvider<ProfileAnalysisStateNotifier, bool>(ProfileAnalysisStateNotifier.new);
