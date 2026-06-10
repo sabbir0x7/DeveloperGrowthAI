@@ -43,9 +43,7 @@ class SettingsDrawer extends ConsumerStatefulWidget {
 }
 
 class _SettingsDrawerState extends ConsumerState<SettingsDrawer> {
-  final TextEditingController _aiKeyController = TextEditingController(
-    text: 'sk-or-v1-e766e5564a5353dd051d' '071e7356b0090b65c2cd091e7d8f24d6a3d69e5961dd',
-  );
+  final TextEditingController _aiKeyController = TextEditingController();
   final TextEditingController _baseUrlController = TextEditingController(
     text: 'https://openrouter.ai/api/v1',
   );
@@ -109,8 +107,12 @@ class _SettingsDrawerState extends ConsumerState<SettingsDrawer> {
     String baseUrl = _baseUrlController.text.trim();
 
     if (aiKey.isEmpty) {
-      aiKey = 'sk-or-v1-e766e5564a5353dd051d' '071e7356b0090b65c2cd091e7d8f24d6a3d69e5961dd';
-      _aiKeyController.text = aiKey;
+      if (mounted) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          const SnackBar(content: Text('Please enter an AI key')),
+        );
+      }
+      return;
     }
 
     if (baseUrl.isEmpty) {
