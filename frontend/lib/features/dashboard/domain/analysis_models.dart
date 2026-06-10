@@ -222,17 +222,22 @@ class Settings {
 @immutable
 class SettingsInput {
   const SettingsInput({
-    required this.aiKey,
+    this.aiKey,
     required this.aiProviderBaseUrl,
   });
 
-  final String aiKey;
+  final String? aiKey;
   final String aiProviderBaseUrl;
 
-  Map<String, dynamic> toJson() => <String, dynamic>{
-        'ai_key': aiKey,
-        'ai_provider_base_url': aiProviderBaseUrl,
-      };
+  Map<String, dynamic> toJson() {
+    final Map<String, dynamic> map = <String, dynamic>{
+      'ai_provider_base_url': aiProviderBaseUrl,
+    };
+    if (aiKey != null && aiKey!.isNotEmpty) {
+      map['ai_key'] = aiKey;
+    }
+    return map;
+  }
 }
 
 Map<String, dynamic> _asMap(dynamic value) {

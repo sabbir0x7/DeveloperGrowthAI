@@ -40,7 +40,7 @@ class SettingsIn(BaseModel):
     service has handed off to :class:`~app.core.encryption.EncryptionService`.
     """
 
-    ai_key: str = Field(min_length=8)
+    ai_key: str | None = Field(default=None, min_length=8)
     ai_provider_base_url: HttpUrl
 
     @field_validator("ai_provider_base_url", mode="after")

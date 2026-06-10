@@ -138,21 +138,31 @@ def put_settings(user_id: UUID | str, payload: SettingsIn) -> SettingsOut:
     re-evaluate the column default on conflict.
     """
     encryption = get_encryption_service()
-    ciphertext = encryption.encrypt(payload.ai_key)
-
     supabase = get_supabase()
+
+    update_data = {
+        "user_id": str(user_id),
+        "ai_provider_base_url": str(payload.ai_provider_base_url),
+        "updated_at": datetime.now(timezone.utc).isoformat(),
+    }
+
+    if payload.ai_key:
+        ciphertext = encryption.encrypt(payload.ai_key)
+        update_data["encrypted_ai_key"] = _encode_bytea(ciphertext)
+
     supabase.table(_TABLE).upsert(
-        {
-            "user_id": str(user_id),
-            "encrypted_ai_key": _encode_bytea(ciphertext),
-            "ai_provider_base_url": str(payload.ai_provider_base_url),
-            "updated_at": datetime.now(timezone.utc).isoformat(),
-        },
+        update_data,
         on_conflict="user_id",
     ).execute()
 
+    if payload.ai_key:
+        has_key = True
+    else:
+        row = _select_row(user_id)
+        has_key = bool(row and _decode_bytea(row.get("encrypted_ai_key")))
+
     return SettingsOut(
-        has_ai_key=True,
+        has_ai_key=has_key,
         ai_provider_base_url=payload.ai_provider_base_url,
     )
 

@@ -46,7 +46,10 @@ class _SetupKeyScreenState extends ConsumerState<SetupKeyScreen> {
     String aiKey = _aiKeyController.text.trim();
     String baseUrl = _baseUrlController.text.trim();
 
-    if (aiKey.isEmpty) {
+    final AsyncValue<Settings> settingsAsync = ref.read(settingsProvider);
+    final bool hasKey = settingsAsync.valueOrNull?.hasAiKey ?? false;
+
+    if (aiKey.isEmpty && !hasKey) {
       if (mounted) {
         ScaffoldMessenger.of(context).showSnackBar(
           const SnackBar(content: Text('Please enter an AI key')),
@@ -76,7 +79,7 @@ class _SetupKeyScreenState extends ConsumerState<SetupKeyScreen> {
     try {
       await ref.read(settingsProvider.notifier).save(
             SettingsInput(
-              aiKey: aiKey,
+              aiKey: aiKey.isEmpty ? null : aiKey,
               aiProviderBaseUrl: baseUrl,
             ),
           );
