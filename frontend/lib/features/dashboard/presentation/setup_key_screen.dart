@@ -47,7 +47,7 @@ class _SetupKeyScreenState extends ConsumerState<SetupKeyScreen> {
     String baseUrl = _baseUrlController.text.trim();
 
     final AsyncValue<Settings> settingsAsync = ref.read(settingsProvider);
-    final bool hasKey = settingsAsync.valueOrNull?.hasAiKey ?? false;
+    final bool hasKey = settingsAsync.value?.hasAiKey ?? false;
 
     if (aiKey.isEmpty && !hasKey) {
       if (mounted) {
