@@ -53,7 +53,6 @@ class _SettingsDrawerState extends ConsumerState<SettingsDrawer> {
   bool _saved = false;
   bool _baseUrlPrefilled = false;
 
-  bool _goalSaved = false;
   bool _goalPrefilled = false;
 
   bool _deletingAccount = false;
@@ -160,9 +159,7 @@ class _SettingsDrawerState extends ConsumerState<SettingsDrawer> {
       return;
     }
 
-    setState(() {
-      _goalSaved = false;
-    });
+
 
     final scaffoldMessenger = ScaffoldMessenger.of(context);
     final router = GoRouter.of(context);
@@ -172,9 +169,7 @@ class _SettingsDrawerState extends ConsumerState<SettingsDrawer> {
       goal: goal,
       onSuccess: () {
         if (!mounted) return;
-        setState(() {
-          _goalSaved = true;
-        });
+
         navigator.pop();
         scaffoldMessenger.showSnackBar(
           const SnackBar(content: Text('Goal updated & dashboard refreshed!')),
@@ -245,7 +240,7 @@ class _SettingsDrawerState extends ConsumerState<SettingsDrawer> {
 
   @override
   Widget build(BuildContext context) {
-    final bool _savingGoal = ref.watch(profileAnalysisStateProvider);
+    final bool savingGoal = ref.watch(profileAnalysisStateProvider);
     final ThemeData theme = Theme.of(context);
     final AsyncValue<Settings> settingsAsync = ref.watch(settingsProvider);
 
@@ -420,7 +415,7 @@ class _SettingsDrawerState extends ConsumerState<SettingsDrawer> {
               const SizedBox(height: 16),
               TextField(
                 controller: _goalController,
-                enabled: !_savingGoal,
+                enabled: !savingGoal,
                 style: const TextStyle(color: Colors.white),
                 maxLines: 2,
                 decoration: InputDecoration(
@@ -445,9 +440,26 @@ class _SettingsDrawerState extends ConsumerState<SettingsDrawer> {
                 label: 'Update Goal & Refresh',
                 icon: Icons.track_changes,
                 color: kNeonCyan,
-                isLoading: _savingGoal,
-                onPressed: _savingGoal ? null : _saveGoal,
+                isLoading: savingGoal,
+                onPressed: savingGoal ? null : _saveGoal,
               ),
+              if (savingGoal) ...<Widget>[
+                const SizedBox(height: 8),
+                TextButton.icon(
+                  onPressed: () {
+                    ref.read(profileAnalysisStateProvider.notifier).cancel();
+                  },
+                  icon: const Icon(Icons.close, size: 16, color: kNeonPink),
+                  label: Text(
+                    'Cancel analysis',
+                    style: TextStyle(
+                      color: kNeonPink,
+                      fontSize: 13,
+                      fontWeight: FontWeight.w500,
+                    ),
+                  ),
+                ),
+              ],
 
               const SizedBox(height: 32),
               // Logout button

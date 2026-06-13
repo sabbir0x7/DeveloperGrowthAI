@@ -51,11 +51,12 @@ class AnalysisRepository {
 
   /// Runs a fresh analysis. Maps backend error codes onto the typed
   /// exceptions above so the UI layer can switch on them directly.
-  Future<AnalysisResult> run(AnalysisRequest request) async {
+  Future<AnalysisResult> run(AnalysisRequest request, {CancelToken? cancelToken}) async {
     try {
       final Response<dynamic> response = await _dio.post<dynamic>(
         '/api/v1/analysis/run',
         data: request.toJson(),
+        cancelToken: cancelToken,
       );
       return AnalysisResult.fromJson(_asMap(response.data));
     } on DioException catch (err) {

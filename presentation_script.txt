@@ -1,0 +1,142 @@
+DeveloperGrowthAI - University Project Documentation & Presentation Guide
+========================================================================
+
+Project Name: DeveloperGrowthAI (Learn. Build. Grow.)
+Type: AI-Powered Career Growth Platform for Software Developers.
+Tech Stack:
+* Frontend: Flutter, Riverpod (State Management), GoRouter, Dio
+* Backend: Python (FastAPI), Supabase (PostgreSQL, Auth), Pydantic
+* AI Integration: OpenRouter / Large Language Models (LLMs)
+
+This document is designed for a 4-person university group presentation. It divides the entire project into 4 logical roles.
+(এই ডকুমেন্টটি ৪ জনের একটি ভার্সিটি গ্রুপের প্রেজেন্টেশনের জন্য তৈরি করা হয়েছে। এখানে পুরো প্রজেক্টের কাজকে ৪ ভাগে ভাগ করা হয়েছে যাতে প্রেজেন্টেশনের সময় সবাই নিজের কাজের অংশটুকু সহজে বুঝিয়ে বলতে পারে।)
+
+------------------------------------------------------------------------
+
+MEMBER 1: Frontend UI/UX Designer & Core Layouts
+
+Role (কাজ): Built the visual identity, UI components, and the main screens of the Flutter application. 
+(আমি মূলত অ্যাপের ডিজাইন, ইউজার ইন্টারফেস এবং ফ্রন্টএন্ডের মূল স্ক্রিনগুলো তৈরি করেছি।)
+
+Key Contributions & Code Written (আমার মূল কাজগুলো):
+1. Custom UI Components (Glassmorphism & Neon Design):
+   * Wrote the glass_card.dart, neon_button.dart, and gradient_text.dart files.
+   * Designed a modern, dark-themed UI with glowing neon accents (Cyan and Pink) and translucent glass panels to make the app visually stunning.
+   (আমি অ্যাপটিতে সাধারণ বাটনের বদলে গ্লাস-মরফিজম (Glassmorphism) এবং নিয়ন ডিজাইনের কাস্টম বাটন এবং কার্ড তৈরি করেছি, যাতে অ্যাপটিকে দেখতে প্রিমিয়াম লাগে।)
+
+2. Dashboard & Visualization:
+   * Developed the DashboardScreen which serves as the hub for the user.
+   * Created the SkillGapView and RoadmapView widgets to present the AI's analysis in a structured, readable, and interactive format.
+   (আমি অ্যাপের মূল ড্যাশবোর্ড তৈরি করেছি যেখানে AI এর দেয়া স্কিল গ্যাপ এবং রোডম্যাপগুলো সুন্দরভাবে কার্ড এবং লিস্ট আকারে দেখা যায়।)
+
+3. Onboarding & Settings UI:
+   * Designed the ConnectProfilesScreen (where users input their GitHub/LinkedIn URLs and Career Goals).
+   * Designed the SettingsDrawer and SetupKeyScreen for securely managing the AI API keys.
+   (ইউজাররা যেখানে তাদের গিটহাব এবং লিংকডইন এর লিংক দিবে এবং সেটিংস থেকে সিকিউরভাবে API Key বসাবে, সেই স্ক্রিনগুলোর ডিজাইনও আমি করেছি।)
+
+Presentation Speech Idea (প্রেজেন্টেশনের সময় যা বলবেন):
+"Hello everyone. I was responsible for the Frontend UI and UX. My goal was to make DeveloperGrowthAI look like a premium, modern developer tool. I implemented a 'Glassmorphism' design system using Flutter. Instead of standard buttons, I wrote custom NeonButton and GlassCard widgets. I also designed the Dashboard where the AI results are visualized, ensuring that complex data like skill gaps and week-by-week roadmaps are presented in an intuitive, animated format."
+(বাংলায় বলতে চাইলে: "হ্যালো এভরিওয়ান, আমি মূলত আমাদের অ্যাপের ফ্রন্টএন্ড ইউজার ইন্টারফেস নিয়ে কাজ করেছি। আমার মূল টার্গেট ছিল অ্যাপটিকে একটি প্রফেশনাল এবং আধুনিক লুক দেওয়া। এজন্য আমি ফ্ল্যাটার ব্যবহার করে একটি কাস্টম 'Glassmorphism' ডিজাইন তৈরি করেছি। ড্যাশবোর্ডে যখন AI এর বিশাল ডাটাগুলো আসে, তখন সেগুলোকে ইউজার-ফ্রেন্ডলিভাবে দেখানোর জন্য আমি কাস্টম অ্যানিমেটেড কার্ড এবং রোডম্যাপ ভিউ তৈরি করেছি।")
+
+------------------------------------------------------------------------
+
+MEMBER 2: Frontend State Management & API Integration
+
+Role (কাজ): Handled the "brain" of the Flutter app, including state management, routing, and HTTP client setup.
+(আমি মূলত ফ্ল্যাটার অ্যাপের ইন্টারনাল লজিক, স্টেট ম্যানেজমেন্ট, ব্যাকএন্ড থেকে ডাটা আনা এবং রাউটিং নিয়ে কাজ করেছি।)
+
+Key Contributions & Code Written (আমার মূল কাজগুলো):
+1. State Management (Riverpod):
+   * Wrote all the providers.dart files across features.
+   * Managed async data fetching (loading, success, error states) using AsyncNotifier. Fixed complex bugs where the UI would freeze.
+   (অ্যাপের ডাটাগুলো যেন ইনস্ট্যান্ট আপডেট হয় এবং লোডিংয়ের সময় যেন অ্যাপ ফ্রিজ না করে, সেজন্য আমি Riverpod ব্যবহার করে স্টেট ম্যানেজমেন্ট করেছি।)
+
+2. API Client & Interceptors (Dio):
+   * Built the dio_client.dart which acts as the bridge between Flutter and FastAPI.
+   * Wrote interceptors that automatically attach the Supabase JWT (Bearer token) to every request securely.
+   (আমি Dio প্যাকেজ ব্যবহার করে ফ্রন্টএন্ডকে ব্যাকএন্ডের সাথে কানেক্ট করেছি। সিকিউরিটির জন্য অথেন্টিকেশন টোকেনগুলোকে অটোমেটিক্যালি হ্যান্ডেল করার সিস্টেম তৈরি করেছি।)
+
+3. Routing Architecture:
+   * Set up go_router in router.dart for deep linking and navigation.
+   * Implemented a RouteGuard that checks if the user is logged in.
+   (ইউজার লগইন ছাড়া যেন মূল অ্যাপে ঢুকতে না পারে, সেজন্য আমি go_router ব্যবহার করে সিকিউর রাউটিং সিস্টেম বানিয়েছি।)
+
+Presentation Speech Idea (প্রেজেন্টেশনের সময় যা বলবেন):
+"Hi, I handled the Frontend Architecture and API Integration. While Member 1 made the app look good, I made it functional. I used Riverpod for state management to ensure that when a user updates their career goal, the UI reacts instantly without memory leaks. I also configured the Dio HTTP client with custom interceptors to automatically handle JWT authentication tokens securely. Finally, I built the routing logic that guards protected pages from unauthorized users."
+(বাংলায় বলতে চাইলে: "হাই, আমি ফ্রন্টএন্ড আর্কিটেকচার এবং API ইন্টিগ্রেশন হ্যান্ডেল করেছি। মেম্বার ১ অ্যাপটিকে দেখতে সুন্দর করেছে, আর আমি অ্যাপটিকে ফাংশনাল করেছি। ড্যাশবোর্ডের ডাটাগুলো যেন খুব দ্রুত এবং স্মুথলি লোড হয় সেজন্য আমি Riverpod স্টেট ম্যানেজমেন্ট ব্যবহার করেছি। এছাড়া ফ্রন্টএন্ড থেকে ব্যাকএন্ডে রিকোয়েস্ট পাঠানোর জন্য Dio ক্লায়েন্ট এবং সিকিউরিটি টোকেনগুলো অটোমেটিক হ্যান্ডেল করার জন্য ইন্টারসেপ্টর তৈরি করেছি।")
+
+------------------------------------------------------------------------
+
+MEMBER 3: Backend Architecture & Database Admin
+
+Role (কাজ): Built the FastAPI server, defined the database schema, and handled secure user data persistence.
+(আমি আমাদের প্রজেক্টের ব্যাকএন্ড সার্ভার তৈরি করেছি, ডাটাবেস ডিজাইন করেছি এবং ইউজারের ডাটা যেন নিরাপদে থাকে সেটার ব্যবস্থা করেছি।)
+
+Key Contributions & Code Written (আমার মূল কাজগুলো):
+1. FastAPI Server Setup:
+   * Wrote main.py configuring the FastAPI application, CORS middleware, and global exception handlers.
+   (আমি পাইথনের FastAPI ফ্রেমওয়ার্ক দিয়ে আমাদের মূল সার্ভারটি সেটআপ করেছি।)
+
+2. Supabase & Database Management:
+   * Designed the PostgreSQL database schema including users, analyses, skills, roadmaps tables.
+   * Wrote the profile_service.py to handle fetching and patching user data safely.
+   (আমি ডাটাবেস হিসেবে Supabase এবং PostgreSQL ব্যবহার করেছি। ইউজারের প্রোফাইল, স্কিল এবং রোডম্যাপগুলো যেন ডাটাবেসে ঠিকমতো সেভ হয়, আমি সেই রিলেশনাল টেবিলগুলো ডিজাইন করেছি।)
+
+3. Security & Encryption:
+   * Wrote settings_service.py and the EncryptionService.
+   * Ensured that user-provided AI keys are strictly encrypted using the Fernet symmetric encryption algorithm before saving.
+   (যেহেতু ইউজাররা তাদের নিজেদের AI API Key ব্যবহার করবে, তাই সিকিউরিটির জন্য আমি ডাটাবেসে সেভ করার আগেই Key গুলোকে Fernet অ্যালগরিদম দিয়ে এনক্রিপ্ট করার সিস্টেম তৈরি করেছি, যাতে Key গুলো কখনো হ্যাক না হয়।)
+
+4. Rate Limiting:
+   * Implemented SlowAPI to prevent users from spamming the AI endpoints.
+   (কেউ যেন সার্ভারে স্প্যাম রিকোয়েস্ট না পাঠাতে পারে, সেজন্য আমি Rate Limiting যুক্ত করেছি।)
+
+Presentation Speech Idea (প্রেজেন্টেশনের সময় যা বলবেন):
+"Hello, I was the Backend and Database Administrator. I built our backend using Python and FastAPI, connected to a PostgreSQL database hosted on Supabase. Security was my top priority. Since users provide their own AI API keys, I wrote an encryption service that encrypts these keys before they ever touch our database. I also handled all data validation using Pydantic, and implemented Rate Limiting to prevent API abuse and protect our server infrastructure."
+(বাংলায় বলতে চাইলে: "হ্যালো, আমি ব্যাকএন্ড এবং ডাটাবেস ডিজাইনের কাজ করেছি। আমি পাইথনের FastAPI এবং PostgreSQL ব্যবহার করে সার্ভারটি তৈরি করেছি। এখানে সিকিউরিটি সবচেয়ে বেশি গুরুত্বপূর্ণ ছিল। যেহেতু আমরা ইউজারের কাছ থেকে AI API Key নিচ্ছি, তাই আমি একটি এনক্রিপশন সিস্টেম তৈরি করেছি যা ডাটাবেসে সেভ হওয়ার আগেই Key গুলোকে এনক্রিপ্ট করে ফেলে। পাশাপাশি ডাটা ভ্যালিডেশন এবং স্প্যাম রিকোয়েস্ট ঠেকানোর জন্য আমি রেট লিমিটিং সিস্টেমও ইমপ্লিমেন্ট করেছি।")
+
+------------------------------------------------------------------------
+
+MEMBER 4: AI Pipeline & External Integrations
+
+Role (কাজ): Designed the core "AI" logic, prompt engineering, and third-party OAuth connections.
+(আমি প্রজেক্টের মূল "AI" অংশটি, প্রম্পট ইঞ্জিনিয়ারিং এবং গিটহাব/লিংকডইনের সাথে কানেক্ট করার কাজগুলো করেছি।)
+
+Key Contributions & Code Written (আমার মূল কাজগুলো):
+1. AI Service & Prompt Engineering:
+   * Wrote ai_service.py which connects to OpenRouter / LLMs.
+   * Designed complex, structured prompts that force the AI to analyze a user's GitHub and LinkedIn data and return a strict JSON envelope.
+   (আমি AI মডেলের সাথে আমাদের ব্যাকএন্ডের কানেকশন তৈরি করেছি। AI যেন ঠিকমতো ইউজারের ডাটাগুলো এনালাইজ করে আমাদের ডাটাবেসের জন্য পারফেক্ট JSON ফরম্যাটে ডাটা দেয়, সেজন্য আমি প্রম্পট ইঞ্জিনিয়ারিং করেছি।)
+
+2. Analysis Orchestration:
+   * Wrote analysis_service.py which orchestrates the entire flow: fetching user data -> sending it to the AI -> parsing the AI's JSON response -> and separating the data to be saved into relational tables.
+   (ইউজারের ডাটাগুলো ডাটাবেস থেকে তুলে এনে AI কে দেওয়া, এবং AI এর দেয়া রেজাল্টগুলোকে ফিল্টার করে ডাটাবেসে সেভ করার পুরো লজিকটি আমি লিখেছি।)
+
+3. GitHub & LinkedIn Integrations:
+   * Wrote github_oauth.py and linkedin_oauth.py.
+   * Handled the backend logic for OAuth callbacks, allowing the app to securely request profile data directly from GitHub and LinkedIn.
+   (ইউজাররা যেন সহজেই তাদের গিটহাব এবং লিংকডইন অ্যাকাউন্ট কানেক্ট করতে পারে, সেজন্য আমি OAuth ইন্টিগ্রেশনের কাজ করেছি।)
+
+Presentation Speech Idea (প্রেজেন্টেশনের সময় যা বলবেন):
+"Hi, I developed the AI Pipeline and External Integrations. The core value of DeveloperGrowthAI is the personalized career analysis. I engineered the system that connects to Large Language Models. I wrote strict Prompts and Pydantic validators that force the AI to output exactly the JSON structure we need for our database. Additionally, I built the backend OAuth pipelines for GitHub and LinkedIn so we can automatically pull a developer's real-world experience and feed it directly into our AI analyzer."
+(বাংলায় বলতে চাইলে: "হাই, আমি আমাদের অ্যাপের কোর AI পাইপলাইন এবং এক্সটার্নাল এপিআই ইন্টিগ্রেশনগুলো করেছি। ডেভেলপারদের রিয়েল-টাইম প্রোফাইল এনালাইজ করার জন্য আমি ওপেন-সোর্স লার্জ ল্যাঙ্গুয়েজ মডেলগুলোর (LLM) সাথে ব্যাকএন্ডের কানেকশন করেছি। AI থেকে ডাটাগুলো যেন একদম স্ট্রিক্ট JSON ফরম্যাটে আসে, সেজন্য আমি প্রম্পট ডিজাইন এবং ভ্যালিডেশন রুলস সেট করেছি। এছাড়া ইউজারদের ডাটা সরাসরি নিয়ে আসার জন্য গিটহাব এবং লিংকডইন এর OAuth সিস্টেমটিও আমি ইমপ্লিমেন্ট করেছি।")
+
+------------------------------------------------------------------------
+
+QUICK TIPS FOR THE Q&A SESSION (টিচারদের প্রশ্নের সম্ভাব্য উত্তর):
+
+* Why Flutter? 
+(কেন ফ্ল্যাটার ব্যবহার করেছেন?)
+Answer: Because it allowed us to build a beautiful, high-performance UI across Web and Mobile with a single codebase. (কারণ ফ্ল্যাটার দিয়ে আমরা একটি কোডবেইজ দিয়েই ওয়েব এবং মোবাইলের জন্য প্রিমিয়াম ডিজাইন তৈরি করতে পেরেছি।)
+
+* Why FastAPI? 
+(পাইথনের অন্য ফ্রেমওয়ার্ক বাদ দিয়ে FastAPI কেন?)
+Answer: Python is the industry standard for AI integrations, and FastAPI is incredibly fast and enforces strict typing with Pydantic. (পাইথন হলো AI নিয়ে কাজ করার ইন্ডাস্ট্রি স্ট্যান্ডার্ড, এবং FastAPI অন্যান্য ফ্রেমওয়ার্কের তুলনায় অনেক বেশি ফাস্ট এবং সিকিউর।)
+
+* How is the AI key secured? 
+(ইউজারের API Key কিভাবে নিরাপদ রাখছেন?)
+Answer: It is never stored in plain text. It is encrypted on the backend using symmetric encryption (Fernet) and never sent back to the frontend. (আমরা কখনো ইউজারের অরিজিনাল Key ডাটাবেসে রাখি না। আমরা Fernet এনক্রিপশন ব্যবহার করে ডাটাকে এনক্রিপ্ট করে ফেলি।)
+
+* What was the hardest part? 
+(প্রজেক্টের সবচেয়ে কঠিন কাজ কী ছিল?)
+Answer: Handling async state on the frontend while waiting for the LLM to generate the long analysis response, and getting perfect JSON output from the AI every time. (সবচেয়ে চ্যালেঞ্জিং ছিল AI এর বিশাল রেজাল্ট লোড হওয়ার সময় অ্যাপকে স্মুথ রাখা এবং AI যেন প্রতিবার পারফেক্ট JSON ফরম্যাটে ডাটা দেয় সেটা এনশিওর করা।)

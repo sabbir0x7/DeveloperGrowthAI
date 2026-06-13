@@ -11,16 +11,17 @@
 /// **Validates: Requirements 9.2, 2.1, 2.2, 3.1, 3.5**
 library;
 
+import 'package:dio/dio.dart' show CancelToken, DioException, DioExceptionType;
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:supabase_flutter/supabase_flutter.dart';
 
 import '../../../core/providers.dart';
 import '../../../core/router.dart';
 import '../../auth/presentation/providers.dart';
-import '../../dashboard/presentation/providers.dart' show settingsProvider, analysisProvider, latestAnalysisProvider;
+import '../../dashboard/domain/analysis_models.dart' show AnalysisRequest;
+import '../../dashboard/presentation/providers.dart' show settingsProvider, analysisRepositoryProvider, latestAnalysisProvider;
 import '../data/profile_repository.dart';
 import '../domain/profile.dart';
-import 'package:flutter_riverpod/flutter_riverpod.dart';
 
 /// Repository accessor.
 ///
@@ -84,7 +85,13 @@ class ProfileNotifier extends AsyncNotifier<Profile> {
     final ProfileRepository repo = ref.read(profileRepositoryProvider);
     await repo.deleteAccount();
     // After successful backend deletion, sign out locally.
-    await Supabase.instance.client.auth.signOut();
+    // We catch exceptions here because the user record is gone, so the server
+    // will likely reject the sign-out request with 401/404.
+    try {
+      await Supabase.instance.client.auth.signOut();
+    } catch (_) {
+      // Best-effort sign-out; ignore errors since the account is deleted.
+    }
   }
 }
 
@@ -128,40 +135,90 @@ final Provider<RouteGuardProfile?> routeGuardProfileProvider =
 });
 
 /// Notifier to manage the profile analysis execution state globally.
-/// Fixes issues where the analysis spinner turns off prematurely if
-/// the user navigates away, and ensures the UI properly redirects
-/// inside the success block.
+///
+/// Supports cancellation: the user can abort a running analysis and
+/// immediately start a new one with a corrected goal. The in-flight
+/// HTTP call is cancelled via Dio's [CancelToken].
 class ProfileAnalysisStateNotifier extends Notifier<bool> {
+  /// Token for the currently in-flight analysis HTTP call, if any.
+  CancelToken? _cancelToken;
+
   @override
   bool build() => false;
+
+  /// Cancels the in-flight analysis (if any) and resets the spinner.
+  ///
+  /// Safe to call even when no analysis is running.
+  void cancel() {
+    _cancelToken?.cancel('User cancelled the analysis.');
+    _cancelToken = null;
+    state = false;
+  }
 
   Future<void> runAnalysis({
     required String goal,
     required void Function() onSuccess,
     required void Function(Object error) onError,
   }) async {
-    if (state) return;
-    
-    // Set loading state globally
+    // Cancel any previous in-flight analysis so the user can immediately
+    // re-run with a corrected goal without waiting for the old one.
+    _cancelToken?.cancel('Superseded by new analysis.');
+
+    final CancelToken token = CancelToken();
+    _cancelToken = token;
+
+    // Set loading state globally.
     state = true;
-    
+
     try {
-      // Step 1: Save the goal
-      await ref.read(profileProvider.notifier).patch(ProfilePatch(goal: goal));
+      // Step 1: Save the goal and capture the updated profile.
+      final Profile updated = await ref.read(profileProvider.notifier).patch(
+        ProfilePatch(goal: goal),
+      );
 
-      // Step 2: Run analysis immediately
-      await ref.read(analysisProvider(goal).future);
+      // Step 2: Run analysis directly via the repository.
+      final String? githubUrl = updated.githubUrl;
+      final String? linkedinUrl = updated.linkedinUrl;
+      if (githubUrl == null || linkedinUrl == null) {
+        throw StateError(
+          'Cannot run analysis: profile is missing github_url or linkedin_url.',
+        );
+      }
 
-      // Step 3: Refresh latest analysis and wait for the data
-      await ref.refresh(latestAnalysisProvider.future);
-      
-      // Step 4: Success block
+      await ref.read(analysisRepositoryProvider).run(
+        AnalysisRequest(
+          githubUrl: githubUrl,
+          linkedinUrl: linkedinUrl,
+          goal: goal,
+        ),
+        cancelToken: token,
+      );
+
+      // Bail out if this operation was cancelled while awaiting.
+      if (token.isCancelled) return;
+
+      // Step 3: Refresh latest analysis and wait for the data.
+      ref.invalidate(latestAnalysisProvider);
+      await ref.read(latestAnalysisProvider.future);
+
+      if (token.isCancelled) return;
+
+      // Step 4: Success block.
       onSuccess();
+    } on DioException catch (e) {
+      // Silently swallow cancellation — the user intentionally aborted.
+      if (e.type == DioExceptionType.cancel) return;
+      onError(e);
     } catch (e) {
       onError(e);
     } finally {
-      // Set spinning state to false inside finally block
-      state = false;
+      // Only reset state if this is still the current operation.
+      // If a new runAnalysis was started (superseding this one), its
+      // token will differ and we must not clobber its loading state.
+      if (_cancelToken == token) {
+        _cancelToken = null;
+        state = false;
+      }
     }
   }
 }

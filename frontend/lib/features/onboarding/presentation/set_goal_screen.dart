@@ -25,8 +25,6 @@ import '../../../shared/widgets/gradient_text.dart';
 import '../../../shared/widgets/neon_button.dart';
 import '../../../shared/widgets/settings_scaffold.dart';
 import '../../dashboard/data/analysis_repository.dart';
-import '../../dashboard/presentation/providers.dart';
-import '../domain/profile.dart';
 import 'providers.dart';
 
 /// Maximum number of characters allowed in a career goal.
@@ -170,7 +168,7 @@ class _SetGoalScreenState extends ConsumerState<SetGoalScreen> {
 
   @override
   Widget build(BuildContext context) {
-    final bool _submitting = ref.watch(profileAnalysisStateProvider);
+    final bool submitting = ref.watch(profileAnalysisStateProvider);
     final ThemeData theme = Theme.of(context);
     final int length = _controller.text.length;
     final bool overLimit = length > kGoalMaxLength;
@@ -210,7 +208,7 @@ class _SetGoalScreenState extends ConsumerState<SetGoalScreen> {
                       _GoalField(
                         controller: _controller,
                         errorText: _showError ? _error : null,
-                        enabled: !_submitting,
+                        enabled: !submitting,
                         onSubmitted: (_) => _submit(),
                       ),
                       const SizedBox(height: 8),
@@ -227,10 +225,29 @@ class _SetGoalScreenState extends ConsumerState<SetGoalScreen> {
                         child: NeonButton(
                           label: 'Run Analysis',
                           icon: Icons.analytics_outlined,
-                          isLoading: _submitting,
-                          onPressed: _submitting ? null : _submit,
+                          isLoading: submitting,
+                          onPressed: submitting ? null : _submit,
                         ),
                       ),
+                      if (submitting) ...<Widget>[
+                        const SizedBox(height: 8),
+                        Center(
+                          child: TextButton.icon(
+                            onPressed: () {
+                              ref.read(profileAnalysisStateProvider.notifier).cancel();
+                            },
+                            icon: const Icon(Icons.close, size: 16, color: kNeonPink),
+                            label: Text(
+                              'Cancel analysis',
+                              style: TextStyle(
+                                color: kNeonPink,
+                                fontSize: 13,
+                                fontWeight: FontWeight.w500,
+                              ),
+                            ),
+                          ),
+                        ),
+                      ],
                     ],
                   ),
                 ),
